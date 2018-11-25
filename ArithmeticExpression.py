@@ -143,7 +143,6 @@ class ArithmeticExpression(collections.MutableSequence):
         """
         Shuffle the terms of the expression in a random order.
         """
-        ((1) + ((((2) + (5)) * ((1) + (3)))))
         self.group_terms()
         terms = [[Operations.ADDITION, self[0]]]
         for i in range(1, len(self), 2):
@@ -224,12 +223,41 @@ class ArithmeticExpression(collections.MutableSequence):
     
     def __rmul__(self, other):
         return self.__mul__(other)
+    
+    def __floordiv__(self, other):
+        
+        if not isinstance(other, ArithmeticExpression):
+            other = ArithmeticExpression(other)
+
+        copy = self.copy()
+        copy.group_terms()
+        if not copy.is_superficial_sum():
+            copy[0] = ArithmeticExpression(copy[0], Operations.DIVISION, other)
+            return copy
+        for i in range(0, len(copy), 2):
+            current = copy[i]
+            if isinstance(current, ArithmeticExpression):
+                copy[i] /= other
+        copy.simplify()
+        return copy
+
+    def __rfloordiv__(self, other):
+        if not isinstance(other, ArithmeticExpression):
+            other = ArithmeticExpression(other)
+        return ArithmeticExpression.__div__(other, self)
+
+    def __truediv__(self, other): return self.__floordiv__(other)
+
+    def __rtruediv__(self, other): return self.__rfloordiv__(other)
+
+    def __div__(self, other): return self.__floordiv__(other)
+
+    def __rdiv__(self, other): return self.__rfloordiv__(other)
 
     def __pow__(self, other):
         # TODO consider adding multinomial theorem expansion, might add in the obfuscator instead of the abstract interface
         if not isinstance(other, ArithmeticExpression):
             other = ArithmeticExpression(other)
-
         copy = self.copy()
         copy.group_terms()
         copy = ArithmeticExpression(copy, Operations.EXPONENTIATION, other)
@@ -240,13 +268,7 @@ class ArithmeticExpression(collections.MutableSequence):
 
         if not isinstance(other, ArithmeticExpression):
             other = ArithmeticExpression(other)
-
-        copy = self.copy()
-        copy.group_terms()
-        copy = ArithmeticExpression(other, Operations.EXPONENTIATION, copy)
-        copy.simplify()
-        return copy
-
+        return ArithmeticExpression.__pow__(other, self)
 
     def __add__(self, other):
         copy = self.copy()
@@ -255,12 +277,19 @@ class ArithmeticExpression(collections.MutableSequence):
         copy.extend([Operations.ADDITION, other])
         return copy
     
-    def __radd__(self, other):
+    def __radd__(self, other): return self.__add__(other)
+
+    def __sub__(self, other):
         copy = self.copy()
         if not isinstance(other, ArithmeticExpression):
             other = ArithmeticExpression(other)
-        other.extend([Operations.ADDITION, copy])
-        return other
+        copy.extend([Operations.SUBTRACTION, other])
+        return copy
+    
+    def __rsub__(self, other):
+        if not isinstance(other, ArithmeticExpression):
+            other = ArithmeticExpression(other)
+        return ArithmeticExpression.__sub__(other, self)
 
     def __neg__(self):
         return self * -1
@@ -288,7 +317,8 @@ class ArithmeticExpression(collections.MutableSequence):
         
 if __name__ == "__main__":
 
-    l = ArithmeticExpression(1, "+", 2)
-    #l.as_equation()
-    print(2**l)
+    l = ArithmeticExpression(1, "+", 2, "/", 2)
+    l.group_terms() 
+
+    print(l + 3)
     
