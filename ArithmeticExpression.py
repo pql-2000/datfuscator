@@ -221,6 +221,32 @@ class ArithmeticExpression(collections.MutableSequence):
                 copy[i] *= other
         copy.simplify()
         return copy
+    
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __pow__(self, other):
+        # TODO consider adding multinomial theorem expansion, might add in the obfuscator instead of the abstract interface
+        if not isinstance(other, ArithmeticExpression):
+            other = ArithmeticExpression(other)
+
+        copy = self.copy()
+        copy.group_terms()
+        copy = ArithmeticExpression(copy, Operations.EXPONENTIATION, other)
+        copy.simplify()
+        return copy
+
+    def __rpow__(self, other):
+
+        if not isinstance(other, ArithmeticExpression):
+            other = ArithmeticExpression(other)
+
+        copy = self.copy()
+        copy.group_terms()
+        copy = ArithmeticExpression(other, Operations.EXPONENTIATION, copy)
+        copy.simplify()
+        return copy
+
 
     def __add__(self, other):
         copy = self.copy()
@@ -238,9 +264,6 @@ class ArithmeticExpression(collections.MutableSequence):
 
     def __neg__(self):
         return self * -1
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
 
     def __eq__(self, other):
         return self.eval() == other
@@ -265,7 +288,7 @@ class ArithmeticExpression(collections.MutableSequence):
         
 if __name__ == "__main__":
 
-    l = ArithmeticExpression(1, "+",  2, "*", ArithmeticExpression(1, '+', 3))
+    l = ArithmeticExpression(1, "+", 2)
     #l.as_equation()
-    print((l * l))
+    print(2**l)
     

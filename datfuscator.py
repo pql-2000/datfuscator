@@ -14,7 +14,7 @@ class Datfuscator():
     def obfuscate(self, integer: int):
         pass
 
-    def to_polynomial(self, n: int, n_terms: int=3) -> ArithmeticExpression:
+    def to_multinomial(self, n: int, n_terms: int=3) -> ArithmeticExpression:
 
         assert n_terms > 0
 
@@ -51,7 +51,7 @@ class Datfuscator():
 if __name__ == "__main__":
 
     d = Datfuscator()
-    result = d.to_polynomial(400, 5)
+    result = d.to_multinomial(400, 5)
 
     print( repr((5 * result + 6).complexify()))
     
